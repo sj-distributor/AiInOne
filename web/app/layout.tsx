@@ -3,8 +3,8 @@ import I18nServer from './components/i18n-server'
 import BrowserInitor from './components/browser-initor'
 import SentryInitor from './components/sentry-initor'
 import { getLocaleOnServer } from '@/i18n/server'
-import './styles/markdown.scss'
 import './styles/globals.css'
+import './styles/markdown.scss'
 
 export const metadata = {
   title: 'AiInOne',
