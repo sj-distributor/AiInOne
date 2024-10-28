@@ -1,6 +1,6 @@
 const translation = {
   pageTitle: 'Bun venit! Hai să începem!👋',
-  welcome: 'Bine ai venit la Dify, te rugăm să te autentifici pentru a continua.',
+  welcome: 'Bine ai venit la AiInOne, te rugăm să te autentifici pentru a continua.',
   email: 'Adresă de email',
   emailPlaceholder: 'Adresa ta de email',
   password: 'Parolă',
@@ -20,7 +20,7 @@ const translation = {
   invitationCodePlaceholder: 'Codul tău de invitație',
   interfaceLanguage: 'Limba interfeței',
   timezone: 'Fus orar',
-  go: 'Mergi la Dify',
+  go: 'Mergi la AiInOne',
   sendUsMail: 'Trimite-ne un email cu introducerea ta și noi ne vom ocupa de cererea de invitație.',
   acceptPP: 'Am citit și accept politica de confidențialitate',
   reset: 'Rulați următoarea comandă pentru a vă reseta parola',
@@ -58,14 +58,14 @@ const translation = {
     registrationNotAllowed: 'Contul nu a fost găsit. Vă rugăm să contactați administratorul de sistem pentru a vă înregistra.',
   },
   license: {
-    tip: 'Înainte de a începe Dify Community Edition, citește',
+    tip: 'Înainte de a începe AiInOne Community Edition, citește',
     link: 'Licența open-source de pe GitHub',
   },
   join: 'Alătură-te',
   joinTipStart: 'Te invităm să te alături echipei',
-  joinTipEnd: 'pe Dify',
+  joinTipEnd: 'pe AiInOne',
   invalid: 'Link-ul a expirat',
-  explore: 'Explorează Dify',
+  explore: 'Explorează AiInOne',
   activatedTipStart: 'Te-ai alăturat echipei',
   activatedTipEnd: '',
   activated: 'Autentifică-te acum',
@@ -97,7 +97,7 @@ const translation = {
   noLoginMethod: 'Metoda de autentificare nu este configurată',
   enterYourName: 'Vă rugăm să introduceți numele de utilizator',
   or: 'SAU',
-  resetPasswordDesc: 'Tastați e-mailul pe care l-ați folosit pentru a vă înscrie pe Dify și vă vom trimite un e-mail de resetare a parolei.',
+  resetPasswordDesc: 'Tastați e-mailul pe care l-ați folosit pentru a vă înscrie pe AiInOne și vă vom trimite un e-mail de resetare a parolei.',
   changePasswordBtn: 'Setați o parolă',
 }
 

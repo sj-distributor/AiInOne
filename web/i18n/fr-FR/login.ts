@@ -1,6 +1,6 @@
 const translation = {
   pageTitle: 'Salut, commençons !👋',
-  welcome: 'Bienvenue sur Dify, veuillez vous connecter pour continuer.',
+  welcome: 'Bienvenue sur AiInOne, veuillez vous connecter pour continuer.',
   email: 'Adresse e-mail',
   emailPlaceholder: 'Votre email',
   password: 'Mot de passe',
@@ -19,7 +19,7 @@ const translation = {
   invitationCodePlaceholder: 'Votre code d\'invitation',
   interfaceLanguage: 'Langue de l\'interface',
   timezone: 'Fuseau horaire',
-  go: 'Aller à Dify',
+  go: 'Aller à AiInOne',
   sendUsMail: 'Envoyez-nous votre introduction, et nous nous occuperons de la demande d\'invitation.',
   acceptPP: 'J\'ai lu et j\'accepte la politique de confidentialité',
   reset: 'Veuillez exécuter la commande suivante pour réinitialiser votre mot de passe',
@@ -57,14 +57,14 @@ const translation = {
     registrationNotAllowed: 'Compte introuvable. Veuillez contacter l’administrateur système pour vous inscrire.',
   },
   license: {
-    tip: 'Avant de commencer Dify Community Edition, lisez le GitHub',
+    tip: 'Avant de commencer AiInOne Community Edition, lisez le GitHub',
     link: 'Licence Open-source',
   },
   join: 'Rejoindre',
   joinTipStart: 'Je vous invite à rejoindre',
-  joinTipEnd: 'équipe sur Dify',
+  joinTipEnd: 'équipe sur AiInOne',
   invalid: 'Le lien a expiré',
-  explore: 'Explorez Dify',
+  explore: 'Explorez AiInOne',
   activatedTipStart: 'Vous avez rejoint le',
   activatedTipEnd: 'équipe',
   activated: 'Connectez-vous maintenant',
@@ -97,7 +97,7 @@ const translation = {
   back: 'Précédent',
   enterYourName: 'Veuillez entrer votre nom d’utilisateur',
   noLoginMethodTip: 'Veuillez contacter l’administrateur système pour ajouter une méthode d’authentification.',
-  resetPasswordDesc: 'Tapez l’adresse e-mail que vous avez utilisée pour vous inscrire sur Dify et nous vous enverrons un e-mail de réinitialisation de mot de passe.',
+  resetPasswordDesc: 'Tapez l’adresse e-mail que vous avez utilisée pour vous inscrire sur AiInOne et nous vous enverrons un e-mail de réinitialisation de mot de passe.',
   usePassword: 'Utiliser le mot de passe',
 }
 

@@ -1,6 +1,6 @@
 const translation = {
   pageTitle: 'Ehi, iniziamo!👋',
-  welcome: 'Benvenuto su Dify, per favore accedi per continuare.',
+  welcome: 'Benvenuto su AiInOne, per favore accedi per continuare.',
   email: 'Indirizzo email',
   emailPlaceholder: 'La tua email',
   password: 'Password',
@@ -22,7 +22,7 @@ const translation = {
   invitationCodePlaceholder: 'Il tuo codice di invito',
   interfaceLanguage: 'Lingua dell\'interfaccia',
   timezone: 'Fuso orario',
-  go: 'Vai a Dify',
+  go: 'Vai a AiInOne',
   sendUsMail:
     'Inviaci una email con la tua presentazione e gestiremo la richiesta di invito.',
   acceptPP: 'Ho letto e accetto l\'informativa sulla privacy',
@@ -68,14 +68,14 @@ const translation = {
     registrationNotAllowed: 'Account non trovato. Si prega di contattare l\'amministratore di sistema per registrarsi.',
   },
   license: {
-    tip: 'Prima di avviare Dify Community Edition, leggi su GitHub',
+    tip: 'Prima di avviare AiInOne Community Edition, leggi su GitHub',
     link: 'Licenza open-source',
   },
   join: 'Unisciti',
   joinTipStart: 'Invitato a unirti al',
-  joinTipEnd: 'team su Dify',
+  joinTipEnd: 'team su AiInOne',
   invalid: 'Il link è scaduto',
-  explore: 'Esplora Dify',
+  explore: 'Esplora AiInOne',
   activatedTipStart: 'Sei entrato nel team',
   activatedTipEnd: '',
   activated: 'Accedi ora',
@@ -106,7 +106,7 @@ const translation = {
   continueWithCode: 'Continua con il codice',
   sendVerificationCode: 'Invia codice di verifica',
   useVerificationCode: 'Usa il codice di verifica',
-  resetPasswordDesc: 'Digita l\'e-mail che hai utilizzato per registrarti su Dify e ti invieremo un\'e-mail per reimpostare la password.',
+  resetPasswordDesc: 'Digita l\'e-mail che hai utilizzato per registrarti su AiInOne e ti invieremo un\'e-mail per reimpostare la password.',
   noLoginMethodTip: 'Contatta l\'amministratore di sistema per aggiungere un metodo di autenticazione.',
   enterYourName: 'Inserisci il tuo nome utente',
 }

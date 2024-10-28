@@ -58,7 +58,7 @@ const translation = {
     registrationNotAllowed: 'アカウントが見つかりません。登録するためにシステム管理者に連絡してください。',
   },
   license: {
-    tip: 'Dify Community Editionを開始する前に、GitHubの',
+    tip: 'AiInOne Community Editionを開始する前に、GitHubの',
     link: 'オープンソースライセンス',
   },
   join: '参加する',
