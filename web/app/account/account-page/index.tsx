@@ -320,7 +320,7 @@ export default function AccountPage() {
                       window.location.href = e.currentTarget.href
                     }}
                   >
-                    support@dify.ai
+                    support@aiinone.ai
                   </a>
                 </div>
                 <div className='my-2 px-3 py-2 rounded-lg bg-gray-100 text-sm font-medium leading-5 text-gray-800'>{`${t('common.account.delete')}: ${userProfile.email}`}</div>
