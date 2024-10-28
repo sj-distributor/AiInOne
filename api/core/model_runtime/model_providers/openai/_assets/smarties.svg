@@ -1,3 +1,15 @@
-<svg width="200" height="50" xmlns="http://www.w3.org/2000/svg">
-  <text x="10" y="35" font-family="Arial, Helvetica, sans-serif" font-size="40" fill="black">Metis</text>
+<svg width="300" height="100" xmlns="http://www.w3.org/2000/svg">
+  <!-- AI Neural Network Icon -->
+  <circle cx="50" cy="50" r="20" stroke="black" stroke-width="2" fill="none" />
+  <circle cx="30" cy="30" r="5" fill="black" />
+  <circle cx="70" cy="30" r="5" fill="black" />
+  <circle cx="30" cy="70" r="5" fill="black" />
+  <circle cx="70" cy="70" r="5" fill="black" />
+  <line x1="30" y1="30" x2="50" y2="50" stroke="black" stroke-width="2" />
+  <line x1="70" y1="30" x2="50" y2="50" stroke="black" stroke-width="2" />
+  <line x1="30" y1="70" x2="50" y2="50" stroke="black" stroke-width="2" />
+  <line x1="70" y1="70" x2="50" y2="50" stroke="black" stroke-width="2" />
+
+  <!-- Metis Text -->
+  <text x="100" y="60" font-family="Arial, Helvetica, sans-serif" font-size="40" fill="black">Metis</text>
 </svg>
