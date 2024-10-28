@@ -70,7 +70,7 @@ const translation = {
       run: 'Run',
       firecrawlTitle: 'Extract web content with 🔥Firecrawl',
       firecrawlDoc: 'Firecrawl docs',
-      firecrawlDocLink: 'https://docs.dify.ai/guides/knowledge-base/sync-from-website',
+      firecrawlDocLink: 'https://docs.aiinone.ai/guides/knowledge-base/sync-from-website',
       jinaReaderTitle: 'Convert the entire site to Markdown',
       jinaReaderDoc: 'Learn more about Jina Reader',
       jinaReaderDocLink: 'https://jina.ai/reader',
@@ -156,7 +156,7 @@ const translation = {
   },
   stepThree: {
     creationTitle: '🎉 Knowledge created',
-    creationContent: 'We automatically named the Knowledge, you can modify it at any time',
+    creationContent: 'We automatically named the Knowledge, you can moaiinone it at any time',
     label: 'Knowledge name',
     additionTitle: '🎉 Document uploaded',
     additionP1: 'The document has been uploaded to the Knowledge',
