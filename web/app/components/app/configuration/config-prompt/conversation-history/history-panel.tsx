@@ -7,7 +7,6 @@ import OperationBtn from '@/app/components/app/configuration/base/operation-btn'
 import Panel from '@/app/components/app/configuration/base/feature-panel'
 import { MessageClockCircle } from '@/app/components/base/icons/src/vender/solid/general'
 import I18n from '@/context/i18n'
-import { LanguagesSupported } from '@/i18n/language'
 
 type Props = {
   showWarning: boolean
@@ -42,7 +41,7 @@ const HistoryPanel: FC<Props> = ({
       }
       noBodySpacing
     >
-      {showWarning && (
+      {/* {showWarning && (
         <div className='flex justify-between py-2 px-3 rounded-b-xl bg-[#FFFAEB] text-xs text-gray-700'>
           <div>{t('appDebug.feature.conversationHistory.tip')}
             <a href={`${locale === LanguagesSupported[1]
@@ -53,7 +52,7 @@ const HistoryPanel: FC<Props> = ({
             </a>
           </div>
         </div>
-      )}
+      )} */}
     </Panel>
   )
 }

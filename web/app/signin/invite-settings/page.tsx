@@ -1,7 +1,6 @@
 'use client'
 import { useTranslation } from 'react-i18next'
 import { useCallback, useState } from 'react'
-import Link from 'next/link'
 import { useContext } from 'use-context-selector'
 import { useRouter, useSearchParams } from 'next/navigation'
 import useSWR from 'swr'
@@ -71,11 +70,11 @@ export default function InviteSettingsPage() {
         <div className="mb-3 flex justify-center items-center w-14 h-14 rounded-2xl border border-components-panel-border-subtle shadow-lg text-2xl font-bold">🤷‍♂️</div>
         <h2 className="title-4xl-semi-bold">{t('login.invalid')}</h2>
       </div>
-      <div className="w-full mx-auto mt-6">
+      {/* <div className="w-full mx-auto mt-6">
         <Button variant='primary' className='w-full !text-sm'>
           <a href="https://dify.ai">{t('login.explore')}</a>
         </Button>
-      </div>
+      </div> */}
     </div>
   }
 
@@ -141,7 +140,7 @@ export default function InviteSettingsPage() {
         </Button>
       </div>
     </form>
-    <div className="block w-full mt-2 system-xs-regular">
+    {/* <div className="block w-full mt-2 system-xs-regular">
       {t('login.license.tip')}
       &nbsp;
       <Link
@@ -149,6 +148,6 @@ export default function InviteSettingsPage() {
         target='_blank' rel='noopener noreferrer'
         href={`https://docs.dify.ai/${language !== LanguagesSupported[1] ? 'user-agreement' : `v/${locale.toLowerCase()}/policies`}/open-source`}
       >{t('login.license.link')}</Link>
-    </div>
+    </div> */}
   </div>
 }

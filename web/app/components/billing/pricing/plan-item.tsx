@@ -4,7 +4,7 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { useContext } from 'use-context-selector'
 import { Plan } from '../type'
-import { ALL_PLANS, NUM_INFINITE, contactSalesUrl, contractSales, unAvailable } from '../config'
+import { ALL_PLANS, NUM_INFINITE, contractSales, unAvailable } from '../config'
 import Toast from '../../base/toast'
 import Tooltip from '../../base/tooltip'
 import { PlanRange } from './select-plan-range'
@@ -188,7 +188,7 @@ const PlanItem: FC<Props> = ({
       return
 
     if (isEnterprisePlan) {
-      window.location.href = contactSalesUrl
+      // window.location.href = contactSalesUrl
       return
     }
     // Only workspace manager can buy plan

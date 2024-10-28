@@ -6,9 +6,9 @@ export const useNodeHelpLink = (nodeType: BlockEnum) => {
   const language = useGetLanguage()
   const prefixLink = useMemo(() => {
     if (language === 'zh_Hans')
-      return 'https://docs.dify.ai/v/zh-hans/guides/workflow/node/'
+      return ''
 
-    return 'https://docs.dify.ai/guides/workflow/node/'
+    return ''
   }, [language])
   const linkMap = useMemo(() => {
     if (language === 'zh_Hans') {

@@ -33,7 +33,6 @@ import FloatPopoverContainer from '@/app/components/base/float-popover-container
 import DatasetDetailContext from '@/context/dataset-detail'
 import { DataSourceType } from '@/models/datasets'
 import useBreakpoints, { MediaType } from '@/hooks/use-breakpoints'
-import { LanguagesSupported } from '@/i18n/language'
 import { useStore } from '@/app/components/app/store'
 import { AiText, ChatBot, CuteRobot } from '@/app/components/base/icons/src/vender/solid/communication'
 import { Route } from '@/app/components/base/icons/src/vender/solid/mapsAndTravel'
@@ -162,7 +161,7 @@ const ExtraInfo = ({ isMobile, relatedApps }: IExtraInfoProps) => {
             </div>
           </div>
           <div className='text-xs text-gray-500 mt-2'>{t('common.datasetMenus.emptyTip')}</div>
-          <a
+          {/* <a
             className='inline-flex items-center text-xs text-primary-600 mt-2 cursor-pointer'
             href={
               locale === LanguagesSupported[1]
@@ -173,7 +172,7 @@ const ExtraInfo = ({ isMobile, relatedApps }: IExtraInfoProps) => {
           >
             <BookOpenIcon className='mr-1' />
             {t('common.datasetMenus.viewDoc')}
-          </a>
+          </a> */}
         </div>
       </FloatPopoverContainer>
     )}
@@ -241,7 +240,7 @@ const DatasetDetailLayout: FC<IAppDetailLayoutProps> = (props) => {
     <div className='grow flex overflow-hidden'>
       {!hideSideBar && <AppSideBar
         title={datasetRes?.name || '--'}
-        icon={datasetRes?.icon || 'https://static.dify.ai/images/dataset-default-icon.png'}
+        icon={datasetRes?.icon || 'https://static.wixstatic.com/media/4741be_2f062f6c8ef74708b64652131fad6f07~mv2.png/v1/fill/w_30,h_34,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/Frame%201597883169.png'}
         icon_background={datasetRes?.icon_background || '#F5F5F5'}
         desc={datasetRes?.description || '--'}
         isExternal={datasetRes?.provider === 'external'}
