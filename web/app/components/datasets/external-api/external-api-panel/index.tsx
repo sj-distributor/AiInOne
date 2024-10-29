@@ -1,7 +1,6 @@
 import React from 'react'
 import {
   RiAddLine,
-  RiBookOpenLine,
   RiCloseLine,
 } from '@remixicon/react'
 import { useTranslation } from 'react-i18next'
@@ -50,10 +49,10 @@ const ExternalAPIPanel: React.FC<ExternalAPIPanelProps> = ({ onClose }) => {
           <div className='flex flex-col items-start gap-1 flex-grow'>
             <div className='self-stretch text-text-primary system-xl-semibold'>{t('dataset.externalAPIPanelTitle')}</div>
             <div className='self-stretch text-text-tertiary body-xs-regular'>{t('dataset.externalAPIPanelDescription')}</div>
-            <a className='flex justify-center items-center gap-1 self-stretch cursor-pointer' href='https://docs.dify.ai/guides/knowledge-base/external-knowledge-api-documentation' target='_blank'>
+            {/* <a className='flex justify-center items-center gap-1 self-stretch cursor-pointer' href='https://docs.dify.ai/guides/knowledge-base/external-knowledge-api-documentation' target='_blank'>
               <RiBookOpenLine className='w-3 h-3 text-text-accent' />
               <div className='flex-grow text-text-accent body-xs-regular'>{t('dataset.externalAPIPanelDocumentation')}</div>
-            </a>
+            </a> */}
           </div>
           <div className='flex items-center'>
             <ActionButton onClick={() => onClose()}>

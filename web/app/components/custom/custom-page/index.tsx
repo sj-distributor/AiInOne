@@ -5,14 +5,12 @@ import GridMask from '@/app/components/base/grid-mask'
 import UpgradeBtn from '@/app/components/billing/upgrade-btn'
 import { useProviderContext } from '@/context/provider-context'
 import { Plan } from '@/app/components/billing/type'
-import { contactSalesUrl } from '@/app/components/billing/config'
 
 const CustomPage = () => {
   const { t } = useTranslation()
   const { plan, enableBilling } = useProviderContext()
 
   const showBillingTip = enableBilling && plan.type === Plan.sandbox
-  const showContact = enableBilling && (plan.type === Plan.professional || plan.type === Plan.team)
 
   return (
     <div className='flex flex-col'>
@@ -30,7 +28,7 @@ const CustomPage = () => {
         )
       }
       <CustomWebAppBrand />
-      {
+      {/* {
         showContact && (
           <div className='absolute bottom-0 h-[50px] leading-[50px] text-xs text-gray-500'>
             {t('custom.customize.prefix')}
@@ -38,7 +36,7 @@ const CustomPage = () => {
             {t('custom.customize.suffix')}
           </div>
         )
-      }
+      } */}
     </div>
   )
 }

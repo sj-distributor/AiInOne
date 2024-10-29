@@ -1,7 +1,6 @@
 'use client'
 import type { FC } from 'react'
 import React from 'react'
-import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline'
 import { useTranslation } from 'react-i18next'
 import { useContext } from 'use-context-selector'
 import type { AppMode } from '@/types/app'
@@ -9,7 +8,6 @@ import I18n from '@/context/i18n'
 import Button from '@/app/components/base/button'
 import Modal from '@/app/components/base/modal'
 import Tag from '@/app/components/base/tag'
-import { LanguagesSupported } from '@/i18n/language'
 
 type IShareLinkProps = {
   isShow: boolean
@@ -87,7 +85,7 @@ const CustomizeModal: FC<IShareLinkProps> = ({
           <div className='text-gray-500 text-xs mt-1 mb-2'>{t(`${prefixCustomize}.way1.step3Tip`)}</div>
           <pre className='overflow-x-scroll box-border py-3 px-4 bg-gray-100 text-xs font-medium rounded-lg select-text'>
             NEXT_PUBLIC_APP_ID={`'${appId}'`} <br />
-            NEXT_PUBLIC_APP_KEY={'\'<Web API Key From Dify>\''} <br />
+            NEXT_PUBLIC_APP_KEY={'\'<Web API Key From AiInOne>\''} <br />
             NEXT_PUBLIC_API_URL={`'${api_base_url}'`}
           </pre>
         </div>
@@ -97,7 +95,7 @@ const CustomizeModal: FC<IShareLinkProps> = ({
     <div className='w-full mt-4 px-6 py-5 border-gray-200 rounded-lg border-[0.5px]'>
       <Tag bordered={true} hideBg={true} className='text-primary-600 border-primary-600 uppercase'>{t(`${prefixCustomize}.way`)} 2</Tag>
       <p className='mt-2 text-base font-medium text-gray-800'>{t(`${prefixCustomize}.way2.name`)}</p>
-      <Button
+      {/* <Button
         className='mt-2'
         onClick={() =>
           window.open(
@@ -111,7 +109,7 @@ const CustomizeModal: FC<IShareLinkProps> = ({
       >
         <span className='text-sm text-gray-800'>{t(`${prefixCustomize}.way2.operation`)}</span>
         <ArrowTopRightOnSquareIcon className='w-4 h-4 ml-1 text-gray-800 shrink-0' />
-      </Button>
+      </Button> */}
     </div>
   </Modal>
 }

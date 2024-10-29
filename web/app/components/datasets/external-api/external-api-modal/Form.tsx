@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import type { FC } from 'react'
 import { useTranslation } from 'react-i18next'
-import { RiBookOpenLine } from '@remixicon/react'
 import type { CreateExternalAPIReq, FormSchema } from '../declarations'
 import Input from '@/app/components/base/input'
 import cn from '@/utils/classnames'
@@ -55,7 +54,7 @@ const Form: FC<FormProps> = React.memo(({
             {label[i18n.language] || label.en_US}
             {required && <span className='ml-1 text-red-500'>*</span>}
           </label>
-          {variable === 'endpoint' && (
+          {/* {variable === 'endpoint' && (
             <a
               href={'https://docs.dify.ai/guides/knowledge-base/external-knowledge-api-documentation' || '/'}
               target='_blank'
@@ -65,7 +64,7 @@ const Form: FC<FormProps> = React.memo(({
               <RiBookOpenLine className='w-3 h-3 text-text-accent mr-1' />
               {t('dataset.externalAPIPanelDocumentation')}
             </a>
-          )}
+          )} */}
         </div>
         <Input
           type={type === 'secret' ? 'password' : 'text'}

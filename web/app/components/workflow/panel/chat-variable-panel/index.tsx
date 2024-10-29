@@ -23,7 +23,6 @@ import { findUsedVarNodes, updateNodeVars } from '@/app/components/workflow/node
 import { useNodesSyncDraft } from '@/app/components/workflow/hooks/use-nodes-sync-draft'
 import { BlockEnum } from '@/app/components/workflow/types'
 import I18n from '@/context/i18n'
-import { LanguagesSupported } from '@/i18n/language'
 import cn from '@/utils/classnames'
 
 const ChatVariablePanel = () => {
@@ -137,10 +136,10 @@ const ChatVariablePanel = () => {
         <div className='shrink-0 px-3 pt-2.5 pb-2'>
           <div className='relative p-3 radius-2xl bg-background-section-burn'>
             <div className='inline-block py-[3px] px-[5px] rounded-[5px] border border-divider-deep text-text-tertiary system-2xs-medium-uppercase'>TIPS</div>
-            <div className='mt-1 mb-4 system-sm-regular text-text-secondary'>
+            {/* <div className='mt-1 mb-4 system-sm-regular text-text-secondary'>
               {t('workflow.chatVariable.panelDescription')}
               <a target='_blank' rel='noopener noreferrer' className='text-text-accent' href={locale !== LanguagesSupported[1] ? 'https://docs.dify.ai/guides/workflow/variables#conversation-variables' : `https://docs.dify.ai/${locale.toLowerCase()}/guides/workflow/variables#hui-hua-bian-liang`}>{t('workflow.chatVariable.docLink')}</a>
-            </div>
+            </div> */}
             <div className='flex items-center gap-2'>
               <div className='flex flex-col p-3 pb-4 bg-workflow-block-bg radius-lg border border-workflow-block-border shadow-md'>
                 <BubbleX className='shrink-0 mb-1 w-4 h-4 text-util-colors-teal-teal-700' />
