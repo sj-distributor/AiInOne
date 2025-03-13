@@ -5,6 +5,7 @@ import MemoryConfig from '../_base/components/memory-config'
 import VarReferencePicker from '../_base/components/variable/var-reference-picker'
 import ConfigVision from '../_base/components/config-vision'
 import useConfig from './use-config'
+import { findVariableWhenOnLLMVision } from '../utils'
 import type { LLMNodeType } from './types'
 import ConfigPrompt from './components/config-prompt'
 import VarList from '@/app/components/workflow/nodes/_base/components/variable/var-list'
@@ -67,6 +68,7 @@ const Panel: FC<NodePanelProps<LLMNodeType>> = ({
     handleStop,
     varInputs,
     runResult,
+    filterJinjia2InputVar,
   } = useConfig(id, data)
 
   const model = inputs.model
@@ -101,15 +103,16 @@ const Panel: FC<NodePanelProps<LLMNodeType>> = ({
       )
     }
 
-    if (isVisionModel) {
-      const variableName = data.vision.configs?.variable_selector?.[1] || t(`${i18nPrefix}.files`)!
+    if (isVisionModel && data.vision.enabled && data.vision.configs?.variable_selector) {
+      const currentVariable = findVariableWhenOnLLMVision(data.vision.configs.variable_selector, availableVars)
+
       forms.push(
         {
           label: t(`${i18nPrefix}.vision`)!,
           inputs: [{
-            label: variableName!,
+            label: currentVariable?.variable as any,
             variable: '#files#',
-            type: InputVarType.files,
+            type: currentVariable?.formType as any,
             required: false,
           }],
           values: { '#files#': visionFiles },
@@ -194,7 +197,8 @@ const Panel: FC<NodePanelProps<LLMNodeType>> = ({
               list={inputs.prompt_config?.jinja2_variables || []}
               onChange={handleVarListChange}
               onVarNameChange={handleVarNameChange}
-              filterVar={filterVar}
+              filterVar={filterJinjia2InputVar}
+              isSupportFileVar={false}
             />
           </Field>
         )}
@@ -233,6 +237,7 @@ const Panel: FC<NodePanelProps<LLMNodeType>> = ({
                 hasSetBlockStatus={hasSetBlockStatus}
                 nodesOutputVars={availableVars}
                 availableNodes={availableNodesWithParent}
+                isSupportFileVar
               />
 
               {inputs.memory.query_prompt_template && !inputs.memory.query_prompt_template.includes('{{#sys.query#}}') && (
@@ -267,20 +272,19 @@ const Panel: FC<NodePanelProps<LLMNodeType>> = ({
         />
       </div>
       <Split />
-      <div className='px-4 pt-4 pb-2'>
-        <OutputVars>
-          <>
-            <VarItem
-              name='text'
-              type='string'
-              description={t(`${i18nPrefix}.outputVars.output`)}
-            />
-          </>
-        </OutputVars>
-      </div>
+      <OutputVars>
+        <>
+          <VarItem
+            name='text'
+            type='string'
+            description={t(`${i18nPrefix}.outputVars.output`)}
+          />
+        </>
+      </OutputVars>
       {isShowSingleRun && (
         <BeforeRunForm
           nodeName={inputs.title}
+          nodeType={inputs.type}
           onHide={hideSingleRun}
           forms={singleRunForms}
           runningStatus={runningStatus}

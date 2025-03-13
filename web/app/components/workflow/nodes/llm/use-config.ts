@@ -278,11 +278,15 @@ const useConfig = (id: string, payload: LLMNodeType) => {
   }, [inputs, setInputs])
 
   const filterInputVar = useCallback((varPayload: Var) => {
+    return [VarType.number, VarType.string, VarType.secret, VarType.arrayString, VarType.arrayNumber, VarType.file, VarType.arrayFile].includes(varPayload.type)
+  }, [])
+
+  const filterJinjia2InputVar = useCallback((varPayload: Var) => {
     return [VarType.number, VarType.string, VarType.secret, VarType.arrayString, VarType.arrayNumber].includes(varPayload.type)
   }, [])
 
   const filterMemoryPromptVar = useCallback((varPayload: Var) => {
-    return [VarType.arrayObject, VarType.array, VarType.number, VarType.string, VarType.secret, VarType.arrayString, VarType.arrayNumber].includes(varPayload.type)
+    return [VarType.arrayObject, VarType.array, VarType.number, VarType.string, VarType.secret, VarType.arrayString, VarType.arrayNumber, VarType.file, VarType.arrayFile].includes(varPayload.type)
   }, [])
 
   const {
@@ -302,6 +306,7 @@ const useConfig = (id: string, payload: LLMNodeType) => {
     handleRun,
     handleStop,
     runInputData,
+    runInputDataRef,
     setRunInputData,
     runResult,
     toVarInputs,
@@ -327,27 +332,27 @@ const useConfig = (id: string, payload: LLMNodeType) => {
   const setInputVarValues = useCallback((newPayload: Record<string, any>) => {
     const newVars = {
       ...newPayload,
-      '#context#': runInputData['#context#'],
-      '#files#': runInputData['#files#'],
+      '#context#': runInputDataRef.current['#context#'],
+      '#files#': runInputDataRef.current['#files#'],
     }
     setRunInputData(newVars)
-  }, [runInputData, setRunInputData])
+  }, [runInputDataRef, setRunInputData])
 
   const contexts = runInputData['#context#']
   const setContexts = useCallback((newContexts: string[]) => {
     setRunInputData({
-      ...runInputData,
+      ...runInputDataRef.current,
       '#context#': newContexts,
     })
-  }, [runInputData, setRunInputData])
+  }, [runInputDataRef, setRunInputData])
 
   const visionFiles = runInputData['#files#']
   const setVisionFiles = useCallback((newFiles: any[]) => {
     setRunInputData({
-      ...runInputData,
+      ...runInputDataRef.current,
       '#files#': newFiles,
     })
-  }, [runInputData, setRunInputData])
+  }, [runInputDataRef, setRunInputData])
 
   const allVarStrArr = (() => {
     const arr = isChatModel ? (inputs.prompt_template as PromptItem[]).filter(item => item.edition_type !== EditionType.jinja2).map(item => item.text) : [(inputs.prompt_template as PromptItem).text]
@@ -406,6 +411,7 @@ const useConfig = (id: string, payload: LLMNodeType) => {
     handleRun,
     handleStop,
     runResult,
+    filterJinjia2InputVar,
   }
 }
 

@@ -1,7 +1,5 @@
-from collections.abc import Generator
-
 import pytest
-from tos import TosClientV2
+from tos import TosClientV2  # type: ignore
 
 from extensions.storage.volcengine_tos_storage import VolcengineTosStorage
 from tests.unit_tests.oss.__mock.base import (

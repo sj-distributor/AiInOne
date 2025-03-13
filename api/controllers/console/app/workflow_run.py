@@ -1,10 +1,9 @@
-from flask_restful import Resource, marshal_with, reqparse
-from flask_restful.inputs import int_range
+from flask_restful import Resource, marshal_with, reqparse  # type: ignore
+from flask_restful.inputs import int_range  # type: ignore
 
 from controllers.console import api
 from controllers.console.app.wraps import get_app_model
-from controllers.console.setup import setup_required
-from controllers.console.wraps import account_initialization_required
+from controllers.console.wraps import account_initialization_required, setup_required
 from fields.workflow_run_fields import (
     advanced_chat_workflow_run_pagination_fields,
     workflow_run_detail_fields,

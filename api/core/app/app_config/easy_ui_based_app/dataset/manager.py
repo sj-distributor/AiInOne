@@ -1,3 +1,4 @@
+import uuid
 from typing import Optional
 
 from core.app.app_config.entities import DatasetEntity, DatasetRetrieveConfigEntity
@@ -65,6 +66,8 @@ class DatasetConfigManager:
             dataset_configs = config.get("dataset_configs")
         else:
             dataset_configs = {"retrieval_model": "multiple"}
+        if dataset_configs is None:
+            return None
         query_variable = config.get("dataset_query_variable")
 
         if dataset_configs["retrieval_model"] == "single":
@@ -86,7 +89,9 @@ class DatasetConfigManager:
                         dataset_configs["retrieval_model"]
                     ),
                     top_k=dataset_configs.get("top_k", 4),
-                    score_threshold=dataset_configs.get("score_threshold"),
+                    score_threshold=dataset_configs.get("score_threshold")
+                    if dataset_configs.get("score_threshold_enabled", False)
+                    else None,
                     reranking_model=dataset_configs.get("reranking_model"),
                     weights=dataset_configs.get("weights"),
                     reranking_enabled=dataset_configs.get("reranking_enabled", True),

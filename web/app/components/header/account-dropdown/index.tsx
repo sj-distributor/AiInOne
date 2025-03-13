@@ -2,25 +2,24 @@
 import { useTranslation } from 'react-i18next'
 import { Fragment, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useContext } from 'use-context-selector'
-import { RiArrowDownSLine } from '@remixicon/react'
+import { useContext, useContextSelector } from 'use-context-selector'
+import { RiAccountCircleLine, RiArrowDownSLine, RiArrowRightUpLine, RiBookOpenLine, RiGithubLine, RiInformation2Line, RiLogoutBoxRLine, RiMap2Line, RiSettings3Line, RiStarLine } from '@remixicon/react'
 import Link from 'next/link'
 import { Menu, Transition } from '@headlessui/react'
 import Indicator from '../indicator'
 import AccountAbout from '../account-about'
-import { mailToSupport } from '../utils/util'
-import WorkplaceSelector from './workplace-selector'
+import GithubStar from '../github-star'
+import Support from './support'
+import Compliance from './compliance'
 import classNames from '@/utils/classnames'
 import I18n from '@/context/i18n'
 import Avatar from '@/app/components/base/avatar'
 import { logout } from '@/service/common'
-import { useAppContext } from '@/context/app-context'
-import { ArrowUpRight } from '@/app/components/base/icons/src/vender/line/arrows'
-import { LogOut01 } from '@/app/components/base/icons/src/vender/line/general'
+import AppContext, { useAppContext } from '@/context/app-context'
 import { useModalContext } from '@/context/modal-context'
 import { LanguagesSupported } from '@/i18n/language'
-import { useProviderContext } from '@/context/provider-context'
-import { Plan } from '@/app/components/billing/type'
+import { LicenseStatus } from '@/types/feature'
+import { IS_CLOUD_EDITION } from '@/config'
 
 export type IAppSelector = {
   isMobile: boolean
@@ -28,18 +27,17 @@ export type IAppSelector = {
 
 export default function AppSelector({ isMobile }: IAppSelector) {
   const itemClassName = `
-    flex items-center w-full h-9 px-3 text-gray-700 text-[14px]
-    rounded-lg font-normal hover:bg-gray-50 cursor-pointer
+    flex items-center w-full h-9 pl-3 pr-2 text-text-secondary system-md-regular
+    rounded-lg hover:bg-state-base-hover cursor-pointer gap-1
   `
   const router = useRouter()
   const [aboutVisible, setAboutVisible] = useState(false)
+  const systemFeatures = useContextSelector(AppContext, v => v.systemFeatures)
 
   const { locale } = useContext(I18n)
   const { t } = useTranslation()
-  const { userProfile, langeniusVersionInfo } = useAppContext()
+  const { userProfile, langeniusVersionInfo, isCurrentWorkspaceOwner } = useAppContext()
   const { setShowAccountSettingModal } = useModalContext()
-  const { plan } = useProviderContext()
-  const canEmailSupport = plan.type === Plan.professional || plan.type === Plan.team || plan.type === Plan.enterprise
 
   const handleLogout = async () => {
     await logout({
@@ -47,8 +45,9 @@ export default function AppSelector({ isMobile }: IAppSelector) {
       params: {},
     })
 
-    if (localStorage?.getItem('console_token'))
-      localStorage.removeItem('console_token')
+    localStorage.removeItem('setup_status')
+    localStorage.removeItem('console_token')
+    localStorage.removeItem('refresh_token')
 
     router.push('/signin')
   }
@@ -59,23 +58,21 @@ export default function AppSelector({ isMobile }: IAppSelector) {
         {
           ({ open }) => (
             <>
-              <div>
-                <Menu.Button
-                  className={`
+              <Menu.Button
+                className={`
                     inline-flex items-center
                     rounded-[20px] py-1 pr-2.5 pl-1 text-sm
-                  text-gray-700 hover:bg-gray-200
+                  text-text-secondary hover:bg-state-base-hover
                     mobile:px-1
-                    ${open && 'bg-gray-200'}
+                    ${open && 'bg-state-base-hover'}
                   `}
-                >
-                  <Avatar name={userProfile.name} className='sm:mr-2 mr-0' size={32} />
-                  {!isMobile && <>
-                    {userProfile.name}
-                    <RiArrowDownSLine className="w-3 h-3 ml-1 text-gray-700" />
-                  </>}
-                </Menu.Button>
-              </div>
+              >
+                <Avatar avatar={userProfile.avatar_url} name={userProfile.name} className='sm:mr-2 mr-0' size={32} />
+                {!isMobile && <>
+                  {userProfile.name}
+                  <RiArrowDownSLine className="w-3 h-3 ml-1 text-text-tertiary" />
+                </>}
+              </Menu.Button>
               <Transition
                 as={Fragment}
                 enter="transition ease-out duration-100"
@@ -88,108 +85,115 @@ export default function AppSelector({ isMobile }: IAppSelector) {
                 <Menu.Items
                   className="
                     absolute right-0 mt-1.5 w-60 max-w-80
-                    divide-y divide-gray-100 origin-top-right rounded-lg bg-white
-                    shadow-lg
+                    divide-y divide-divider-subtle origin-top-right rounded-lg bg-components-panel-bg-blur
+                    shadow-lg focus:outline-none
                   "
                 >
-                  <Menu.Item>
-                    <div className='flex flex-nowrap items-center px-4 py-[13px]'>
-                      <Avatar name={userProfile.name} size={36} className='mr-3' />
+                  <Menu.Item disabled>
+                    <div className='flex flex-nowrap items-center pl-3 pr-2 py-[13px]'>
                       <div className='grow'>
-                        <div className='leading-5 font-normal text-[14px] text-gray-800 break-all'>{userProfile.name}</div>
-                        <div className='leading-[18px] text-xs font-normal text-gray-500 break-all'>{userProfile.email}</div>
+                        <div className='system-md-medium text-text-primary break-all'>{userProfile.name}</div>
+                        <div className='system-xs-regular text-text-tertiary break-all'>{userProfile.email}</div>
                       </div>
+                      <Avatar avatar={userProfile.avatar_url} name={userProfile.name} size={36} className='mr-3' />
                     </div>
                   </Menu.Item>
-                  <div className='px-1 py-1'>
-                    <div className='mt-2 px-3 text-xs font-medium text-gray-500'>{t('common.userProfile.workspace')}</div>
-                    <WorkplaceSelector />
-                  </div>
                   <div className="px-1 py-1">
                     <Menu.Item>
-                      <Link
-                        className={classNames(itemClassName, 'group justify-between')}
+                      {({ active }) => <Link
+                        className={classNames(itemClassName, 'group',
+                          active && 'bg-state-base-hover',
+                        )}
                         href='/account'
                         target='_self' rel='noopener noreferrer'>
-                        <div>{t('common.account.account')}</div>
-                        <ArrowUpRight className='hidden w-[14px] h-[14px] text-gray-500 group-hover:flex' />
-                      </Link>
+                        <RiAccountCircleLine className='size-4 shrink-0 text-text-tertiary' />
+                        <div className='grow system-md-regular text-text-secondary px-1'>{t('common.account.account')}</div>
+                        <RiArrowRightUpLine className='size-[14px] shrink-0 text-text-tertiary' />
+                      </Link>}
                     </Menu.Item>
                     <Menu.Item>
-                      <div className={itemClassName} onClick={() => setShowAccountSettingModal({ payload: 'members' })}>
-                        <div>{t('common.userProfile.settings')}</div>
-                      </div>
+                      {({ active }) => <div className={classNames(itemClassName,
+                        active && 'bg-state-base-hover',
+                      )} onClick={() => setShowAccountSettingModal({ payload: 'members' })}>
+                        <RiSettings3Line className='size-4 shrink-0 text-text-tertiary' />
+                        <div className='grow system-md-regular text-text-secondary px-1'>{t('common.userProfile.settings')}</div>
+                      </div>}
                     </Menu.Item>
-                    {canEmailSupport && <Menu.Item>
-                      <a
-                        className={classNames(itemClassName, 'group justify-between')}
-                        href={mailToSupport(userProfile.email, plan.type, langeniusVersionInfo.current_version)}
-                        target='_blank' rel='noopener noreferrer'>
-                        <div>{t('common.userProfile.emailSupport')}</div>
-                        <ArrowUpRight className='hidden w-[14px] h-[14px] text-gray-500 group-hover:flex' />
-                      </a>
-                    </Menu.Item>}
+                  </div>
+                  <div className='p-1'>
                     <Menu.Item>
-                      <Link
-                        className={classNames(itemClassName, 'group justify-between')}
-                        href='https://github.com/langgenius/dify/discussions/categories/feedbacks'
-                        target='_blank' rel='noopener noreferrer'>
-                        <div>{t('common.userProfile.communityFeedback')}</div>
-                        <ArrowUpRight className='hidden w-[14px] h-[14px] text-gray-500 group-hover:flex' />
-                      </Link>
-                    </Menu.Item>
-                    <Menu.Item>
-                      <Link
-                        className={classNames(itemClassName, 'group justify-between')}
-                        href='https://discord.gg/5AEfbxcd9k'
-                        target='_blank' rel='noopener noreferrer'>
-                        <div>{t('common.userProfile.community')}</div>
-                        <ArrowUpRight className='hidden w-[14px] h-[14px] text-gray-500 group-hover:flex' />
-                      </Link>
-                    </Menu.Item>
-                    <Menu.Item>
-                      <Link
-                        className={classNames(itemClassName, 'group justify-between')}
+                      {({ active }) => <Link
+                        className={classNames(itemClassName, 'group justify-between',
+                          active && 'bg-state-base-hover',
+                        )}
                         href={
                           locale !== LanguagesSupported[1] ? 'https://docs.dify.ai/' : `https://docs.dify.ai/v/${locale.toLowerCase()}/`
                         }
                         target='_blank' rel='noopener noreferrer'>
-                        <div>{t('common.userProfile.helpCenter')}</div>
-                        <ArrowUpRight className='hidden w-[14px] h-[14px] text-gray-500 group-hover:flex' />
-                      </Link>
+                        <RiBookOpenLine className='shrink-0 size-4 text-text-tertiary' />
+                        <div className='grow system-md-regular text-text-secondary px-1'>{t('common.userProfile.helpCenter')}</div>
+                        <RiArrowRightUpLine className='shrink-0 size-[14px] text-text-tertiary' />
+                      </Link>}
                     </Menu.Item>
+                    <Support />
+                    {IS_CLOUD_EDITION && isCurrentWorkspaceOwner && <Compliance />}
+                  </div>
+                  <div className='p-1'>
                     <Menu.Item>
-                      <Link
-                        className={classNames(itemClassName, 'group justify-between')}
+                      {({ active }) => <Link
+                        className={classNames(itemClassName, 'group justify-between',
+                          active && 'bg-state-base-hover',
+                        )}
                         href='https://roadmap.dify.ai'
                         target='_blank' rel='noopener noreferrer'>
-                        <div>{t('common.userProfile.roadmap')}</div>
-                        <ArrowUpRight className='hidden w-[14px] h-[14px] text-gray-500 group-hover:flex' />
-                      </Link>
+                        <RiMap2Line className='shrink-0 size-4 text-text-tertiary' />
+                        <div className='grow system-md-regular text-text-secondary px-1'>{t('common.userProfile.roadmap')}</div>
+                        <RiArrowRightUpLine className='shrink-0 size-[14px] text-text-tertiary' />
+                      </Link>}
                     </Menu.Item>
+                    {systemFeatures.license.status === LicenseStatus.NONE && <Menu.Item>
+                      {({ active }) => <Link
+                        className={classNames(itemClassName, 'group justify-between',
+                          active && 'bg-state-base-hover',
+                        )}
+                        href='https://github.com/langgenius/dify'
+                        target='_blank' rel='noopener noreferrer'>
+                        <RiGithubLine className='shrink-0 size-4 text-text-tertiary' />
+                        <div className='grow system-md-regular text-text-secondary px-1'>{t('common.userProfile.github')}</div>
+                        <div className='flex items-center gap-0.5 px-[5px] py-[3px] border border-divider-deep rounded-[5px] bg-components-badge-bg-dimm'>
+                          <RiStarLine className='shrink-0 size-3 text-text-tertiary' />
+                          <GithubStar className='system-2xs-medium-uppercase text-text-tertiary' />
+                        </div>
+                      </Link>}
+                    </Menu.Item>}
                     {
                       document?.body?.getAttribute('data-public-site-about') !== 'hide' && (
                         <Menu.Item>
-                          <div className={classNames(itemClassName, 'justify-between')} onClick={() => setAboutVisible(true)}>
-                            <div>{t('common.userProfile.about')}</div>
-                            <div className='flex items-center'>
-                              <div className='mr-2 text-xs font-normal text-gray-500'>{langeniusVersionInfo.current_version}</div>
+                          {({ active }) => <div className={classNames(itemClassName, 'justify-between',
+                            active && 'bg-state-base-hover',
+                          )} onClick={() => setAboutVisible(true)}>
+                            <RiInformation2Line className='shrink-0 size-4 text-text-tertiary' />
+                            <div className='grow system-md-regular text-text-secondary px-1'>{t('common.userProfile.about')}</div>
+                            <div className='shrink-0 flex items-center'>
+                              <div className='mr-2 system-xs-regular text-text-tertiary'>{langeniusVersionInfo.current_version}</div>
                               <Indicator color={langeniusVersionInfo.current_version === langeniusVersionInfo.latest_version ? 'green' : 'orange'} />
                             </div>
-                          </div>
+                          </div>}
                         </Menu.Item>
                       )
                     }
                   </div>
                   <Menu.Item>
-                    <div className='p-1' onClick={() => handleLogout()}>
+                    {({ active }) => <div className='p-1' onClick={() => handleLogout()}>
                       <div
-                        className='flex items-center justify-between h-9 px-3 rounded-lg cursor-pointer group hover:bg-gray-50'
+                        className={classNames(itemClassName, 'group justify-between',
+                          active && 'bg-state-base-hover',
+                        )}
                       >
-                        <div className='font-normal text-[14px] text-gray-700'>{t('common.userProfile.logout')}</div>
-                        <LogOut01 className='hidden w-[14px] h-[14px] text-gray-500 group-hover:flex' />
+                        <RiLogoutBoxRLine className='shrink-0 size-4 text-text-tertiary' />
+                        <div className='grow system-md-regular text-text-secondary px-1'>{t('common.userProfile.logout')}</div>
                       </div>
-                    </div>
+                    </div>}
                   </Menu.Item>
                 </Menu.Items>
               </Transition>

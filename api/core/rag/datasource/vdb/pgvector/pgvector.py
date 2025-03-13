@@ -3,8 +3,8 @@ import uuid
 from contextlib import contextmanager
 from typing import Any
 
-import psycopg2.extras
-import psycopg2.pool
+import psycopg2.extras  # type: ignore
+import psycopg2.pool  # type: ignore
 from pydantic import BaseModel, model_validator
 
 from configs import dify_config
@@ -25,6 +25,7 @@ class PGVectorConfig(BaseModel):
     database: str
     min_connection: int
     max_connection: int
+    pg_bigm: bool = False
 
     @model_validator(mode="before")
     @classmethod
@@ -57,12 +58,23 @@ CREATE TABLE IF NOT EXISTS {table_name} (
 ) using heap;
 """
 
+SQL_CREATE_INDEX = """
+CREATE INDEX IF NOT EXISTS embedding_cosine_v1_idx ON {table_name} 
+USING hnsw (embedding vector_cosine_ops) WITH (m = 16, ef_construction = 64);
+"""
+
+SQL_CREATE_INDEX_PG_BIGM = """
+CREATE INDEX IF NOT EXISTS bigm_idx ON {table_name}
+USING gin (text gin_bigm_ops);
+"""
+
 
 class PGVector(BaseVector):
     def __init__(self, collection_name: str, config: PGVectorConfig):
         super().__init__(collection_name)
         self.pool = self._create_connection_pool(config)
         self.table_name = f"embedding_{collection_name}"
+        self.pg_bigm = config.pg_bigm
 
     def get_type(self) -> str:
         return VectorType.PGVECTOR
@@ -98,16 +110,17 @@ class PGVector(BaseVector):
         values = []
         pks = []
         for i, doc in enumerate(documents):
-            doc_id = doc.metadata.get("doc_id", str(uuid.uuid4()))
-            pks.append(doc_id)
-            values.append(
-                (
-                    doc_id,
-                    doc.page_content,
-                    json.dumps(doc.metadata),
-                    embeddings[i],
+            if doc.metadata is not None:
+                doc_id = doc.metadata.get("doc_id", str(uuid.uuid4()))
+                pks.append(doc_id)
+                values.append(
+                    (
+                        doc_id,
+                        doc.page_content,
+                        json.dumps(doc.metadata),
+                        embeddings[i],
+                    )
                 )
-            )
         with self._get_cursor() as cur:
             psycopg2.extras.execute_values(
                 cur, f"INSERT INTO {self.table_name} (id, text, meta, embedding) VALUES %s", values
@@ -128,6 +141,11 @@ class PGVector(BaseVector):
         return docs
 
     def delete_by_ids(self, ids: list[str]) -> None:
+        # Avoiding crashes caused by performing delete operations on empty lists in certain scenarios
+        # Scenario 1: extract a document fails, resulting in a table not being created.
+        # Then clicking the retry button triggers a delete operation on an empty list.
+        if not ids:
+            return
         with self._get_cursor() as cur:
             cur.execute(f"DELETE FROM {self.table_name} WHERE id IN %s", (tuple(ids),))
 
@@ -165,15 +183,27 @@ class PGVector(BaseVector):
         top_k = kwargs.get("top_k", 5)
 
         with self._get_cursor() as cur:
-            cur.execute(
-                f"""SELECT meta, text, ts_rank(to_tsvector(coalesce(text, '')), plainto_tsquery(%s)) AS score
-                FROM {self.table_name}
-                WHERE to_tsvector(text) @@ plainto_tsquery(%s)
-                ORDER BY score DESC
-                LIMIT {top_k}""",
-                # f"'{query}'" is required in order to account for whitespace in query
-                (f"'{query}'", f"'{query}'"),
-            )
+            if self.pg_bigm:
+                cur.execute("SET pg_bigm.similarity_limit TO 0.000001")
+                cur.execute(
+                    f"""SELECT meta, text, bigm_similarity(unistr(%s), coalesce(text, '')) AS score
+                    FROM {self.table_name}
+                    WHERE text =%% unistr(%s)
+                    ORDER BY score DESC
+                    LIMIT {top_k}""",
+                    # f"'{query}'" is required in order to account for whitespace in query
+                    (f"'{query}'", f"'{query}'"),
+                )
+            else:
+                cur.execute(
+                    f"""SELECT meta, text, ts_rank(to_tsvector(coalesce(text, '')), plainto_tsquery(%s)) AS score
+                    FROM {self.table_name}
+                    WHERE to_tsvector(text) @@ plainto_tsquery(%s)
+                    ORDER BY score DESC
+                    LIMIT {top_k}""",
+                    # f"'{query}'" is required in order to account for whitespace in query
+                    (f"'{query}'", f"'{query}'"),
+                )
 
             docs = []
 
@@ -199,7 +229,13 @@ class PGVector(BaseVector):
             with self._get_cursor() as cur:
                 cur.execute("CREATE EXTENSION IF NOT EXISTS vector")
                 cur.execute(SQL_CREATE_TABLE.format(table_name=self.table_name, dimension=dimension))
-                # TODO: create index https://github.com/pgvector/pgvector?tab=readme-ov-file#indexing
+                # PG hnsw index only support 2000 dimension or less
+                # ref: https://github.com/pgvector/pgvector?tab=readme-ov-file#indexing
+                if dimension <= 2000:
+                    cur.execute(SQL_CREATE_INDEX.format(table_name=self.table_name))
+                if self.pg_bigm:
+                    cur.execute("CREATE EXTENSION IF NOT EXISTS pg_bigm")
+                    cur.execute(SQL_CREATE_INDEX_PG_BIGM.format(table_name=self.table_name))
             redis_client.set(collection_exist_cache_key, 1, ex=3600)
 
 
@@ -216,12 +252,13 @@ class PGVectorFactory(AbstractVectorFactory):
         return PGVector(
             collection_name=collection_name,
             config=PGVectorConfig(
-                host=dify_config.PGVECTOR_HOST,
+                host=dify_config.PGVECTOR_HOST or "localhost",
                 port=dify_config.PGVECTOR_PORT,
-                user=dify_config.PGVECTOR_USER,
-                password=dify_config.PGVECTOR_PASSWORD,
-                database=dify_config.PGVECTOR_DATABASE,
+                user=dify_config.PGVECTOR_USER or "postgres",
+                password=dify_config.PGVECTOR_PASSWORD or "",
+                database=dify_config.PGVECTOR_DATABASE or "postgres",
                 min_connection=dify_config.PGVECTOR_MIN_CONNECTION,
                 max_connection=dify_config.PGVECTOR_MAX_CONNECTION,
+                pg_bigm=dify_config.PGVECTOR_PG_BIGM,
             ),
         )

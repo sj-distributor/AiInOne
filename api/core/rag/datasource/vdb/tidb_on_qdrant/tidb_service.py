@@ -4,6 +4,7 @@ import uuid
 import requests
 from requests.auth import HTTPDigestAuth
 
+from configs import dify_config
 from extensions.ext_database import db
 from extensions.ext_redis import redis_client
 from models.dataset import TidbAuthBinding
@@ -36,7 +37,7 @@ class TidbService:
         }
 
         spending_limit = {
-            "monthly": 100,
+            "monthly": dify_config.TIDB_SPEND_LIMIT,
         }
         password = str(uuid.uuid4()).replace("-", "")[:16]
         display_name = str(uuid.uuid4()).replace("-", "")[:16]
@@ -145,7 +146,7 @@ class TidbService:
         iam_url: str,
         public_key: str,
         private_key: str,
-    ) -> list[dict]:
+    ):
         """
         Update the status of a new TiDB Serverless cluster.
         :param project_id: The project ID of the TiDB Cloud project (required).
@@ -158,17 +159,15 @@ class TidbService:
 
         :return: The response from the API.
         """
-        clusters = []
         tidb_serverless_list_map = {item.cluster_id: item for item in tidb_serverless_list}
         cluster_ids = [item.cluster_id for item in tidb_serverless_list]
-        params = {"clusterIds": cluster_ids, "view": "FULL"}
+        params = {"clusterIds": cluster_ids, "view": "BASIC"}
         response = requests.get(
             f"{api_url}/clusters:batchGet", params=params, auth=HTTPDigestAuth(public_key, private_key)
         )
 
         if response.status_code == 200:
             response_data = response.json()
-            cluster_infos = []
             for item in response_data["clusters"]:
                 state = item["state"]
                 userPrefix = item["userPrefix"]
@@ -208,7 +207,7 @@ class TidbService:
             }
 
             spending_limit = {
-                "monthly": 10,
+                "monthly": dify_config.TIDB_SPEND_LIMIT,
             }
             password = str(uuid.uuid4()).replace("-", "")[:16]
             display_name = str(uuid.uuid4()).replace("-", "")
@@ -235,16 +234,17 @@ class TidbService:
             cluster_infos = []
             for item in response_data["clusters"]:
                 cache_key = f"tidb_serverless_cluster_password:{item['displayName']}"
-                password = redis_client.get(cache_key)
-                if not password:
+                cached_password = redis_client.get(cache_key)
+                if not cached_password:
                     continue
                 cluster_info = {
                     "cluster_id": item["clusterId"],
                     "cluster_name": item["displayName"],
                     "account": "root",
-                    "password": password.decode("utf-8"),
+                    "password": cached_password.decode("utf-8"),
                 }
                 cluster_infos.append(cluster_info)
             return cluster_infos
         else:
             response.raise_for_status()
+            return []  # FIXME for mypy, This line will not be reached as raise_for_status() will raise an exception

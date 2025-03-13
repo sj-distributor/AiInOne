@@ -1,11 +1,12 @@
 import logging
 
 from flask import request
-from flask_login import current_user
-from flask_restful import Resource, fields, inputs, marshal, marshal_with, reqparse
+from flask_login import current_user  # type: ignore
+from flask_restful import Resource, fields, inputs, marshal, marshal_with, reqparse  # type: ignore
 from werkzeug.exceptions import Unauthorized
 
 import services
+from controllers.common.errors import FilenameNotExistsError
 from controllers.console import api
 from controllers.console.admin import admin_required
 from controllers.console.datasets.error import (
@@ -15,13 +16,17 @@ from controllers.console.datasets.error import (
     UnsupportedFileTypeError,
 )
 from controllers.console.error import AccountNotLinkTenantError
-from controllers.console.setup import setup_required
-from controllers.console.wraps import account_initialization_required, cloud_edition_billing_resource_check
+from controllers.console.wraps import (
+    account_initialization_required,
+    cloud_edition_billing_resource_check,
+    setup_required,
+)
 from extensions.ext_database import db
 from libs.helper import TimestampField
 from libs.login import login_required
 from models.account import Tenant, TenantStatus
 from services.account_service import TenantService
+from services.feature_service import FeatureService
 from services.file_service import FileService
 from services.workspace_service import WorkspaceService
 
@@ -64,6 +69,11 @@ class TenantListApi(Resource):
         tenants = TenantService.get_join_tenants(current_user)
 
         for tenant in tenants:
+            features = FeatureService.get_features(tenant.id)
+            if features.billing.enabled:
+                tenant.plan = features.billing.subscription.plan
+            else:
+                tenant.plan = "sandbox"
             if tenant.id == current_user.current_tenant_id:
                 tenant.current = True  # Set current=True for current tenant
         return {"workspaces": marshal(tenants, tenants_fields)}, 200
@@ -78,11 +88,7 @@ class WorkspaceListApi(Resource):
         parser.add_argument("limit", type=inputs.int_range(1, 100), required=False, default=20, location="args")
         args = parser.parse_args()
 
-        tenants = (
-            db.session.query(Tenant)
-            .order_by(Tenant.created_at.desc())
-            .paginate(page=args["page"], per_page=args["limit"])
-        )
+        tenants = Tenant.query.order_by(Tenant.created_at.desc()).paginate(page=args["page"], per_page=args["limit"])
 
         has_more = False
         if len(tenants.items) == args["limit"]:
@@ -147,6 +153,8 @@ class SwitchWorkspaceApi(Resource):
             raise AccountNotLinkTenantError("Account not link tenant")
 
         new_tenant = db.session.query(Tenant).get(args["tenant_id"])  # Get new tenant
+        if new_tenant is None:
+            raise ValueError("Tenant not found")
 
         return {"result": "success", "new_tenant": marshal(WorkspaceService.get_tenant_info(new_tenant), tenant_fields)}
 
@@ -162,7 +170,7 @@ class CustomConfigWorkspaceApi(Resource):
         parser.add_argument("replace_webapp_logo", type=str, location="json")
         args = parser.parse_args()
 
-        tenant = db.session.query(Tenant).filter(Tenant.id == current_user.current_tenant_id).one_or_404()
+        tenant = Tenant.query.filter(Tenant.id == current_user.current_tenant_id).one_or_404()
 
         custom_config_dict = {
             "remove_webapp_brand": args["remove_webapp_brand"],
@@ -193,12 +201,20 @@ class WebappLogoWorkspaceApi(Resource):
         if len(request.files) > 1:
             raise TooManyFilesError()
 
+        if not file.filename:
+            raise FilenameNotExistsError
+
         extension = file.filename.split(".")[-1]
         if extension.lower() not in {"svg", "png"}:
             raise UnsupportedFileTypeError()
 
         try:
-            upload_file = FileService.upload_file(file=file, user=current_user)
+            upload_file = FileService.upload_file(
+                filename=file.filename,
+                content=file.read(),
+                mimetype=file.mimetype,
+                user=current_user,
+            )
 
         except services.errors.file.FileTooLargeError as file_too_large_error:
             raise FileTooLargeError(file_too_large_error.description)

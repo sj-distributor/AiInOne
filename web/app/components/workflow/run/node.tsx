@@ -11,14 +11,22 @@ import {
 } from '@remixicon/react'
 import BlockIcon from '../block-icon'
 import { BlockEnum } from '../types'
-import Split from '../nodes/_base/components/split'
-import { Iteration } from '@/app/components/base/icons/src/vender/workflow'
+import { RetryLogTrigger } from './retry-log'
+import { IterationLogTrigger } from './iteration-log'
+import { LoopLogTrigger } from './loop-log'
+import { AgentLogTrigger } from './agent-log'
 import cn from '@/utils/classnames'
 import StatusContainer from '@/app/components/workflow/run/status-container'
 import CodeEditor from '@/app/components/workflow/nodes/_base/components/editor/code-editor'
-import Button from '@/app/components/base/button'
 import { CodeLanguage } from '@/app/components/workflow/nodes/code/types'
-import type { NodeTracing } from '@/types/workflow'
+import type {
+  AgentLogItemWithChildren,
+  IterationDurationMap,
+  LoopDurationMap,
+  NodeTracing,
+} from '@/types/workflow'
+import ErrorHandleTip from '@/app/components/workflow/nodes/_base/components/error-handle/error-handle-tip'
+import { hasRetryNode } from '@/app/components/workflow/utils'
 
 type Props = {
   className?: string
@@ -26,9 +34,12 @@ type Props = {
   inMessage?: boolean
   hideInfo?: boolean
   hideProcessDetail?: boolean
-  onShowIterationDetail?: (detail: NodeTracing[][]) => void
+  onShowIterationDetail?: (detail: NodeTracing[][], iterDurationMap: IterationDurationMap) => void
+  onShowLoopDetail?: (detail: NodeTracing[][], loopDurationMap: LoopDurationMap) => void
+  onShowRetryDetail?: (detail: NodeTracing[]) => void
+  onShowAgentOrToolLog?: (detail?: AgentLogItemWithChildren) => void
   notShowIterationNav?: boolean
-  justShowIterationNavArrow?: boolean
+  notShowLoopNav?: boolean
 }
 
 const NodePanel: FC<Props> = ({
@@ -38,8 +49,11 @@ const NodePanel: FC<Props> = ({
   hideInfo = false,
   hideProcessDetail,
   onShowIterationDetail,
+  onShowLoopDetail,
+  onShowRetryDetail,
+  onShowAgentOrToolLog,
   notShowIterationNav,
-  justShowIterationNavArrow,
+  notShowLoopNav,
 }) => {
   const [collapseState, doSetCollapseState] = useState<boolean>(true)
   const setCollapseState = useCallback((state: boolean) => {
@@ -53,7 +67,7 @@ const NodePanel: FC<Props> = ({
     if (time < 1)
       return `${(time * 1000).toFixed(3)} ms`
     if (time > 60)
-      return `${parseInt(Math.round(time / 60).toString())} m ${(time % 60).toFixed(3)} s`
+      return `${Number.parseInt(Math.round(time / 60).toString())} m ${(time % 60).toFixed(3)} s`
     return `${time.toFixed(3)} s`
   }
 
@@ -61,35 +75,28 @@ const NodePanel: FC<Props> = ({
     if (tokens < 1000)
       return tokens
     if (tokens >= 1000 && tokens < 1000000)
-      return `${parseFloat((tokens / 1000).toFixed(3))}K`
+      return `${Number.parseFloat((tokens / 1000).toFixed(3))}K`
     if (tokens >= 1000000)
-      return `${parseFloat((tokens / 1000000).toFixed(3))}M`
-  }
-
-  const getCount = (iteration_curr_length: number | undefined, iteration_length: number) => {
-    if ((iteration_curr_length && iteration_curr_length < iteration_length) || !iteration_length)
-      return iteration_curr_length
-
-    return iteration_length
+      return `${Number.parseFloat((tokens / 1000000).toFixed(3))}M`
   }
 
   useEffect(() => {
     setCollapseState(!nodeInfo.expand)
   }, [nodeInfo.expand, setCollapseState])
 
-  const isIterationNode = nodeInfo.node_type === BlockEnum.Iteration
-  const handleOnShowIterationDetail = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation()
-    e.nativeEvent.stopImmediatePropagation()
-    onShowIterationDetail?.(nodeInfo.details || [])
-  }
+  const isIterationNode = nodeInfo.node_type === BlockEnum.Iteration && !!nodeInfo.details?.length
+  const isLoopNode = nodeInfo.node_type === BlockEnum.Loop && !!nodeInfo.details?.length
+  const isRetryNode = hasRetryNode(nodeInfo.node_type) && !!nodeInfo.retryDetail?.length
+  const isAgentNode = nodeInfo.node_type === BlockEnum.Agent && !!nodeInfo.agentLog?.length
+  const isToolNode = nodeInfo.node_type === BlockEnum.Tool && !!nodeInfo.agentLog?.length
+
   return (
     <div className={cn('px-2 py-1', className)}>
       <div className='group transition-all bg-background-default border border-components-panel-border rounded-[10px] shadow-xs hover:shadow-md'>
         <div
           className={cn(
             'flex items-center pl-1 pr-3 cursor-pointer',
-            hideInfo ? 'py-2' : 'py-1.5',
+            hideInfo ? 'py-2 pl-2' : 'py-1.5',
             !collapseState && (hideInfo ? '!pb-1' : '!pb-1.5'),
           )}
           onClick={() => setCollapseState(!collapseState)}
@@ -119,6 +126,9 @@ const NodePanel: FC<Props> = ({
           {nodeInfo.status === 'stopped' && (
             <RiAlertFill className={cn('shrink-0 ml-2 w-4 h-4 text-text-warning-secondary', inMessage && 'w-3.5 h-3.5')} />
           )}
+          {nodeInfo.status === 'exception' && (
+            <RiAlertFill className={cn('shrink-0 ml-2 w-4 h-4 text-text-warning-secondary', inMessage && 'w-3.5 h-3.5')} />
+          )}
           {nodeInfo.status === 'running' && (
             <div className='shrink-0 flex items-center text-text-accent text-[13px] leading-[16px] font-medium'>
               <span className='mr-2 text-xs font-normal'>Running</span>
@@ -129,35 +139,57 @@ const NodePanel: FC<Props> = ({
         {!collapseState && !hideProcessDetail && (
           <div className='px-1 pb-1'>
             {/* The nav to the iteration detail */}
-            {isIterationNode && !notShowIterationNav && (
-              <div className='mt-2 mb-1 !px-2'>
-                <Button
-                  className='flex items-center w-full self-stretch gap-2 px-3 py-2 bg-components-button-tertiary-bg-hover hover:bg-components-button-tertiary-bg-hover rounded-lg cursor-pointer border-none'
-                  onClick={handleOnShowIterationDetail}
-                >
-                  <Iteration className='w-4 h-4 text-components-button-tertiary-text flex-shrink-0' />
-                  <div className='flex-1 text-left system-sm-medium text-components-button-tertiary-text'>{t('workflow.nodes.iteration.iteration', { count: getCount(nodeInfo.details?.length, nodeInfo.metadata?.iterator_length) })}</div>
-                  {justShowIterationNavArrow
-                    ? (
-                      <RiArrowRightSLine className='w-4 h-4 text-components-button-tertiary-text flex-shrink-0' />
-                    )
-                    : (
-                      <div className='flex items-center space-x-1 text-[#155EEF]'>
-                        <div className='text-[13px] font-normal '>{t('workflow.common.viewDetailInTracingPanel')}</div>
-                        <RiArrowRightSLine className='w-4 h-4 text-components-button-tertiary-text flex-shrink-0' />
-                      </div>
-                    )}
-                </Button>
-                <Split className='mt-2' />
-              </div>
+            {isIterationNode && !notShowIterationNav && onShowIterationDetail && (
+              <IterationLogTrigger
+                nodeInfo={nodeInfo}
+                onShowIterationResultList={onShowIterationDetail}
+              />
             )}
-            <div className={cn('px-[10px]', hideInfo && '!px-2 !py-0.5')}>
-              {nodeInfo.status === 'stopped' && (
+            {/* The nav to the Loop detail */}
+            {isLoopNode && !notShowLoopNav && onShowLoopDetail && (
+              <LoopLogTrigger
+                nodeInfo={nodeInfo}
+                onShowLoopResultList={onShowLoopDetail}
+              />
+            )}
+            {isRetryNode && onShowRetryDetail && (
+              <RetryLogTrigger
+                nodeInfo={nodeInfo}
+                onShowRetryResultList={onShowRetryDetail}
+              />
+            )}
+            {
+              (isAgentNode || isToolNode) && onShowAgentOrToolLog && (
+                <AgentLogTrigger
+                  nodeInfo={nodeInfo}
+                  onShowAgentOrToolLog={onShowAgentOrToolLog}
+                />
+              )
+            }
+            <div className={cn('mb-1', hideInfo && '!px-2 !py-0.5')}>
+              {(nodeInfo.status === 'stopped') && (
                 <StatusContainer status='stopped'>
                   {t('workflow.tracing.stopBy', { user: nodeInfo.created_by ? nodeInfo.created_by.name : 'N/A' })}
                 </StatusContainer>
               )}
+              {(nodeInfo.status === 'exception') && (
+                <StatusContainer status='stopped'>
+                  {nodeInfo.error}
+                  <a
+                    href='https://docs.dify.ai/guides/workflow/error-handling/error-type'
+                    target='_blank'
+                    className='text-text-accent'
+                  >
+                    {t('workflow.common.learnMore')}
+                  </a>
+                </StatusContainer>
+              )}
               {nodeInfo.status === 'failed' && (
+                <StatusContainer status='failed'>
+                  {nodeInfo.error}
+                </StatusContainer>
+              )}
+              {nodeInfo.status === 'retry' && (
                 <StatusContainer status='failed'>
                   {nodeInfo.error}
                 </StatusContainer>
@@ -193,6 +225,7 @@ const NodePanel: FC<Props> = ({
                   language={CodeLanguage.json}
                   value={nodeInfo.outputs}
                   isJSONStringifyBeauty
+                  tip={<ErrorHandleTip type={nodeInfo.execution_metadata?.error_strategy} />}
                 />
               </div>
             )}

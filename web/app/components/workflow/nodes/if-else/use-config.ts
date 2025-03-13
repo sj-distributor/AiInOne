@@ -57,6 +57,7 @@ const useConfig = (id: string, payload: IfElseNodeType) => {
   } = useIsVarFileAttribute({
     nodeId: id,
     isInIteration: payload.isInIteration,
+    isInLoop: payload.isInLoop,
   })
 
   const varsIsVarFileAttribute = useMemo(() => {
@@ -78,24 +79,24 @@ const useConfig = (id: string, payload: IfElseNodeType) => {
   })
 
   const handleAddCase = useCallback(() => {
-    const newInputs = produce(inputs, () => {
-      if (inputs.cases) {
+    const newInputs = produce(inputs, (draft) => {
+      if (draft.cases) {
         const case_id = uuid4()
-        inputs.cases.push({
+        draft.cases.push({
           case_id,
           logical_operator: LogicalOperator.and,
           conditions: [],
         })
-        if (inputs._targetBranches) {
-          const elseCaseIndex = inputs._targetBranches.findIndex(branch => branch.id === 'false')
+        if (draft._targetBranches) {
+          const elseCaseIndex = draft._targetBranches.findIndex(branch => branch.id === 'false')
           if (elseCaseIndex > -1) {
-            inputs._targetBranches = branchNameCorrect([
-              ...inputs._targetBranches.slice(0, elseCaseIndex),
+            draft._targetBranches = branchNameCorrect([
+              ...draft._targetBranches.slice(0, elseCaseIndex),
               {
                 id: case_id,
                 name: '',
               },
-              ...inputs._targetBranches.slice(elseCaseIndex),
+              ...draft._targetBranches.slice(elseCaseIndex),
             ])
           }
         }

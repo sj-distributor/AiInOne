@@ -70,6 +70,9 @@ export type ChatProps = {
   showFileUpload?: boolean
   onFeatureBarClick?: (state: boolean) => void
   noSpacing?: boolean
+  inputDisabled?: boolean
+  isMobile?: boolean
+  sidebarCollapseState?: boolean
 }
 
 const Chat: FC<ChatProps> = ({
@@ -106,6 +109,9 @@ const Chat: FC<ChatProps> = ({
   showFileUpload,
   onFeatureBarClick,
   noSpacing,
+  inputDisabled,
+  isMobile,
+  sidebarCollapseState,
 }) => {
   const { t } = useTranslation()
   const { currentLogItem, setCurrentLogItem, showPromptLogModal, setShowPromptLogModal, showAgentLogModal, setShowAgentLogModal } = useAppStore(useShallow(state => ({
@@ -182,12 +188,17 @@ const Chat: FC<ChatProps> = ({
     if (chatContainer) {
       const setUserScrolled = () => {
         if (chatContainer)
-          userScrolledRef.current = chatContainer.scrollHeight - chatContainer.scrollTop >= chatContainer.clientHeight + 300
+          userScrolledRef.current = chatContainer.scrollHeight - chatContainer.scrollTop > chatContainer.clientHeight
       }
       chatContainer.addEventListener('scroll', setUserScrolled)
       return () => chatContainer.removeEventListener('scroll', setUserScrolled)
     }
   }, [])
+
+  useEffect(() => {
+    if (!sidebarCollapseState)
+      setTimeout(() => handleWindowResize(), 200)
+  }, [sidebarCollapseState])
 
   const hasTryToAsk = config?.suggested_questions_after_answer?.enabled && !!suggestedQuestions?.length && onSend
 
@@ -251,11 +262,8 @@ const Chat: FC<ChatProps> = ({
           </div>
         </div>
         <div
-          className={`absolute bottom-0 ${(hasTryToAsk || !noChatInput || !noStopResponding) && chatFooterClassName}`}
+          className={`absolute bottom-0 bg-chat-input-mask flex justify-center ${(hasTryToAsk || !noChatInput || !noStopResponding) && chatFooterClassName}`}
           ref={chatFooterRef}
-          style={{
-            background: 'linear-gradient(0deg, #F9FAFB 40%, rgba(255, 255, 255, 0.00) 100%)',
-          }}
         >
           <div
             ref={chatFooterInnerRef}
@@ -276,12 +284,14 @@ const Chat: FC<ChatProps> = ({
                 <TryToAsk
                   suggestedQuestions={suggestedQuestions}
                   onSend={onSend}
+                  isMobile={isMobile}
                 />
               )
             }
             {
               !noChatInput && (
                 <ChatInputArea
+                  disabled={inputDisabled}
                   showFeatureBar={showFeatureBar}
                   showFileUpload={showFileUpload}
                   featureBarDisabled={isResponding}
@@ -292,6 +302,7 @@ const Chat: FC<ChatProps> = ({
                   inputs={inputs}
                   inputsForm={inputsForm}
                   theme={themeBuilder?.theme}
+                  isResponding={isResponding}
                 />
               )
             }
